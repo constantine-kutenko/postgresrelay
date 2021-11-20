@@ -1,0 +1,33 @@
+version: '3.7'
+
+services:
+  postgresrelay:
+    build:
+      context: ./
+      dockerfile: docker/Dockerfile
+    image: postgresrelay
+    hostname: postgresrelay
+    restart: always
+    container_name: postgresrelay
+    restart: "no"
+    ports:
+      - "8090:8090/tcp"
+    environment:
+      ENVIRONMENT: development
+      PYTHONUNBUFFERED: 1
+      LISTEN_ADDR: '0.0.0.0'
+      LISTEN_PORT: '8090'
+      REMOTE_ADDR: '127.0.0.1'
+      REMOTE_PORT: '5432'
+      QUERY_LOG_FILE: '/var/log/postgresrelay/queries.log'
+      PERSISTENT_QUERY_LOG: '/var/log/postgresrelay_pv/postgres_queries.log'
+      QUERY_FILTER: 'true'
+    volumes:
+      - ./config/config.yaml:/etc/postgresrelay/config.yaml
+      - ./persistent_logs/postgres_queries.log:/var/log/postgresrelay_pv/postgres_queries.log
+      - ./src/src/app.py:/src/app.py
+      - logs:/var/log/postgresrelay
+    stop_grace_period: 1s
+
+volumes:
+  logs:

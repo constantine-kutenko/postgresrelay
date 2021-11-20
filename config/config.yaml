@@ -1,0 +1,9 @@
+users:
+  - username: pguser1
+    password: pgpass
+  - username: pguser2
+    password: pgpass
+  - username: pguser5
+    password: pgpass
+  - username: usr0
+    password: pgpass

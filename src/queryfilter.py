@@ -1,0 +1,22 @@
+ANCILLARYQUERY = {
+    'current_schema(),session_user',
+    'version()',
+    'keep alive',
+    'pg_stat_ssl',
+    'pg_catalog',
+    'pg_postmaster_start_time()',
+    'pg_namespace',
+    'database_age',
+    'extra_float_digits',
+    'SET application_name',
+    'select current_database()',
+    'select usesuper',
+    'select case',
+    'SHOW TRANSACTION ISOLATION LEVEL',
+    'set search_path',
+    'pg_depend',
+    'SHOW search_path',
+    'S_1',
+    'S_2',
+    'S_3'
+}

@@ -12,7 +12,7 @@
 
 ## Overview
 
-`PostgreSQL Relay` is a proxy server for PostgreSQL with query logging capability that forwards packets from client software to a PostgreSQL instance set with functionality of logging queries.
+`Postgres Relay` is a proxy server for PostgreSQL with query logging capability that forwards packets from client software to a PostgreSQL instance set with functionality of logging queries.
 
 ## Purpose
 
