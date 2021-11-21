@@ -1,0 +1,106 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: postgresrelay
+  name: postgresrelay
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: postgresrelay
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: postgresrelay
+      name: postgresrelay
+    spec:
+      containers:
+      - env:
+        - name: REMOTE_ADDR
+          value: 127.0.0.1
+        - name: QUERY_FILTER
+          value: "true"
+        - name: PERSISTENT_QUERY_LOG
+          value: /var/log/postgresrelay_pv/postgres_queries.log
+        - name: LOG_LEVEL
+          value: debug
+        image: postgresrelay:0.0.1
+        imagePullPolicy: Always
+        name: postgresrelay
+        ports:
+        - containerPort: 8090
+          name: conn
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 400m
+            memory: 400Mi
+          requests:
+            cpu: 200m
+            memory: 200Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/log/postgresrelay
+          name: postgresrelay-query-logs
+        - mountPath: /var/log/postgresrelay_pv
+          name: persistent-query-log
+        - mountPath: /etc/postgresrelay
+          name: postgresrelay-config
+      # For ProxySQL Query Log Publisher see https://github.com/constantine-kutenko/query-publisher
+      - env:
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              key: token
+              name: slack-webhook-url
+        - name: QUERY_LOG_FILE
+          value: /var/log/postgresrelay/queries.log
+        - name: PERSISTENT_QUERY_LOG
+          value: /var/log/postgresrelay_pv/postgres_queries.log
+        - name: INSTANCE_TYPE
+          value: postgres
+        image: query-publisher:0.0.1
+        imagePullPolicy: Always
+        name: publisher
+        resources:
+          limits:
+            cpu: 50m
+            memory: 100Mi
+          requests:
+            cpu: 10m
+            memory: 50Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/log/postgresrelay
+          name: postgresrelay-query-logs
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: local-registry
+      priorityClassName: high-priority
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - emptyDir: {}
+        name: postgresrelay-query-logs
+      - configMap:
+          defaultMode: 420
+          name: postgresrelay-config
+        name: postgresrelay-config
+      - name: persistent-query-log
+        persistentVolumeClaim:
+          claimName: postgresrelay-query-log
